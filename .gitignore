@@ -1,0 +1,10 @@
+.DS_Store
+.specstory/
+__pycache__/
+pjt/
+ai_modlist_filter.py
+extract_mod_info.py
+optimize_mod_descriptions.py
+out.ipynb
+update_mod_comments.py
+.env

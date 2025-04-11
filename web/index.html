@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MOD管理器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <div class="btn-group">
+                <button class="setting-btn" onclick="open_settings()">设置</button>
+                <button class="load-btn" onclick="loadBaseData()">加载基础配置</button>
+                <button class="load-btn" onclick="add_mod()">自动添加Mod</button>
+                <button class="load-btn" onclick="manual_add_mod()">手动添加Mod</button>
+                <button class="load-btn" onclick="save_plan()">保存方案</button>
+                <button class="load-btn" onclick="export_mods()">导出选中模组</button>
+                <button class="load-btn" onclick="test_game()">测试游戏</button>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="panel">
+                <div class="search-box">
+                    <input type="text" placeholder="搜索左侧文件..." 
+                           oninput="filterItems(this.value, 'left')" >
+                    <select id="contentFilterLeft" onchange="updateLists()" style="margin-left: 10px;">
+                        <option value="label_name">Name</option>
+                        <option value="label">Label</option>
+                        <option value="desc">Desc</option>
+                        <option value="comment">Comment</option>
+                        <option value="url">URL</option>
+                        <option value="mcmod_url">MCMod</option>
+                        <option value="name">FileName</option>
+                        <option value="install">Install</option>
+                    </select>
+                    <label id="leftTotal" style="margin-left: 10px;"></label>
+                </div>
+                <div class="list" id="leftList"></div>
+            </div>
+            
+            <div class="panel">
+                <div class="search-box">
+                    <input type="text" placeholder="搜索右侧文件..." 
+                           oninput="filterItems(this.value, 'right')">
+                    <select id="contentFilterRight" onchange="updateLists()" style="margin-left: 10px;">
+                        <option value="label_name">Name</option>
+                        <option value="label">Label</option>
+                        <option value="desc">Desc</option>
+                        <option value="comment">Comment</option>
+                        <option value="url">URL</option>
+                        <option value="mcmod_url">MCMod</option>
+                        <option value="name">FileName</option>
+                        <option value="install">Install</option>
+                    </select>
+                    <label id="rightTotal" style="margin-left: 10px;"></label>
+                </div>
+                <div class="list" id="rightList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="editModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>编辑模组</h2>
+            
+            <select id="tagSelector" class="tag-selector" onchange="onTagChange()">
+                <option value="label_name">Name</option>
+                <option value="label">Label</option>
+                <option value="desc">Desc</option>
+                <option value="comment">Comment</option>
+                <option value="url">URL</option>
+                <option value="mcmod_url">MCMod</option>
+                <option value="install">Install</option>
+            </select>
+
+            <textarea id="tagEditor" placeholder="请输入内容..."></textarea>
+            <div class="save-btn-group">
+                <button onclick="saveEdit()" style="width: 25%; margin: 0 5px;">保存</button>
+                <button id="deleteButton" style="width: 25%; margin: 0 5px;">删除</button>
+                <button id="replaceButton" style="width: 25%; margin: 0 5px;">替换</button>
+                <button onclick="auto_check()" style="width: 25%; margin: 0 5px;">自动获取</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loadingModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span id="closeLoadingMod" class="close" onclick="close_loading_mod()" style="display: none;">&times;</span>
+            <span id="minimizeLoadingBtn" class="minimize" onclick="minimizeLoading()">&minus;</span>
+            <h2 style="text-align: center;">加载模组中</h2>
+            <h3 id="loading-content" style="margin: 0 30px;"></h3>
+        </div>
+    </div>
+    
+    <div class="modal" id="settingPanel" style="display: none;">
+        <div class="modal-content">
+            <div class="input-group">
+                <button class="choose-btn" onclick="selectProjectFolder()">选择项目文件夹</button>
+                <input type="text" id="projectPath" readonly>
+            </div>
+            <div class="input-group">
+                <label>当前方案：</label>
+                <select id="planSelector" onchange="onPlanChange()">
+                    <option value="">-- 选择方案 --</option>
+                </select>
+                <button class="btn-small" onclick="loadSelectedPlan()">加载</button>
+                <button class="btn-small" onclick="createNewPlan()">新建</button>
+            </div>
+            <div class="input-group">
+                <label>遮掩方案：</label>
+                <select id="maskPlanSelector">
+                    <option value="">-- 无遮掩 --</option>
+                </select>
+                <select id="maskModeSelector">
+                    <option value="include">包含</option>
+                    <option value="exclude">排除</option>
+                </select>
+                <button class="btn-small" onclick="applyMask()">应用</button>
+            </div>
+            <div class="input-group">
+                <button class="choose-btn" onclick="clearAndReload()">清空加载</button>
+                <span style="margin-left: 10px;">清空当前方案和遮掩设置并重新加载</span>
+            </div>
+            <div class="input-group">
+                <button class="choose-btn" onclick="selectExportFolder()">选择导出路径</button>
+                <input type="text" id="exportPath" readonly>
+            </div>
+            <div class="input-group">
+                <label>测试指令：</label>
+                <input type="text" id="testCommand" placeholder="输入测试游戏的命令">
+            </div>
+            <div class="input-group">
+                <button class="save-btn" onclick="close_settings()">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2 style="text-align: center;">是否确认删除该Mod</h2>
+            <div class="modal-buttons" style="display: flex; justify-content: center; margin-top: 20px;">
+                <button onclick="delete_mod()" style="margin: 0 10px;">确认删除</button>
+                <button onclick="document.getElementById('deleteModal').style.display='none'" style="margin: 0 10px;">取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="planNameModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('planNameModal').style.display = 'none'">&times;</span>
+            <h2 style="text-align: center;">创建新方案</h2>
+            <input type="text" id="planNameInput" placeholder="输入新方案名称" onkeydown="if(event.key === 'Enter') save_plan_with_name()">
+            <button onclick="save_plan_with_name()">创建方案</button>
+        </div>
+    </div>
+    
+    <!-- 小型加载框 -->
+    <div id="miniLoadingContainer" class="mini-loading-container" style="display: none;">
+        <div class="mini-loading-title">
+            <span>正在进行自动获取任务</span>
+            <button onclick="closeMiniLoading()">✕</button>
+        </div>
+        <div id="miniLoadingContent" class="mini-loading-content">
+            <!-- 任务会动态添加到这里 -->
+        </div>
+    </div>
+    
+    <!-- 最小化状态的加载框 -->
+    <div id="minimizedLoading" class="minimized-loading" style="display: none;">
+        <div class="minimized-loading-title">
+            <span>加载模组中...</span>
+            <button onclick="maximizeLoading()">&#8634;</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
